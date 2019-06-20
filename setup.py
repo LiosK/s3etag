@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
         name="s3etag",
-        version="0.1.0",
+        version="0.1.1",
         description="Compute AWS S3 Etags.",
         author="LiosK",
         author_email="contact@mail.liosk.net",

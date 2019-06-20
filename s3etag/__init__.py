@@ -54,6 +54,6 @@ def process_file(filename, chunksize):
         return err.errno
 
     etag = f"{dgst_whole.hexdigest()}-{count}" if count > 1 else dgst_part.hexdigest()
-    print(f"{etag: <40s}{filename}", flush=True)
+    print(f"{etag: <39s} {filename}", flush=True)
 
     return 0
