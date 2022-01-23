@@ -4,31 +4,47 @@ import argparse
 import hashlib
 import re
 import sys
+import os
+import pathlib
 
 
 def main():
     # parse arguments
-    parser = argparse.ArgumentParser(description="s3etag - compute AWS S3 Etags")
+    parser = argparse.ArgumentParser(
+        description="s3etag - compute AWS S3 Etags"
+    )
     parser.add_argument("files", nargs="+", help="filenames")
     parser.add_argument(
-        "--chunksize",
+        "-t", "--threshhold",
         metavar="size",
         default="8MB",
         type=parse_chunksize,
-        help="multipart_chunksize used for upload in bytes or with a size suffix KB, MB, GB, or TB (default: 8MB)",
+        help="threshhold to apply multipart md5 calculation in bytes "
+             "or with a size suffix KB, MB, GB, or TB (default: 8MB)"
+    )
+    parser.add_argument(
+        "-c", "--chunksize",
+        metavar="size",
+        default="8MB",
+        type=parse_chunksize,
+        help="multipart_chunksize used for upload in bytes "
+             "or with a size suffix KB, MB, GB, or TB (default: 8MB)"
     )
     args = parser.parse_args()
 
     # loop given files
-    results = [process_file(f, args.chunksize) for f in args.files]
-    return int(any(results))
+    for f in args.files:
+        etag = calc_s3_etag(f, args.threshhold, args.chunksize)
+        print("{: <39s} {}".format(etag, f), flush=True)
 
 
 def parse_chunksize(size):
     """Parse chunksize argument"""
     match = re.fullmatch(r"(\d+)([KMGT]B)?", size)
     if match is None:
-        raise argparse.ArgumentTypeError("invalid size value: '{}'".format(size))
+        raise argparse.ArgumentTypeError(
+            "invalid size value: '{}'".format(size)
+        )
     num, suffix = match.groups("")
     return int(num) * (
         {
@@ -41,29 +57,45 @@ def parse_chunksize(size):
     )
 
 
-def process_file(filename, chunksize):
+def calc_s3_etag(filename, threshhold, chunksize):
     """Compute and print Etag for a file"""
-    count = 0
-    dgst_part = hashlib.md5()
-    dgst_whole = hashlib.md5()
-    try:
-        with open(filename, "rb") as fh:
-            while True:
-                buf = fh.read(chunksize)
-                if len(buf) < 1:
-                    break
-                count = count + 1
-                dgst_part = hashlib.md5(buf)
-                dgst_whole.update(dgst_part.digest())
-    except OSError as err:
-        print("ERROR: {}".format(err), file=sys.stderr, flush=True)
-        return err.errno
+    if isinstance(filename, pathlib.PosixPath):
+        filesize = filename.stat().st_size
+    elif isinstance(filename, str):
+        filesize = os.path.getsize(filename)
+    else:
+        print("invalid filename", sys.stderr)
 
-    etag = (
-        "{}-{}".format(dgst_whole.hexdigest(), count)
-        if count > 1
-        else dgst_part.hexdigest()
-    )
-    print("{: <39s} {}".format(etag, filename), flush=True)
+    if filesize <= threshhold:
+        try:
+            with open(filename, "rb") as fh:
+                buf = fh.read()
+                etag = hashlib.md5(buf).hexdigest()
+        except OSError as err:
+            print("ERROR: {}".format(err), file=sys.stderr, flush=True)
+            return err.errno
 
-    return 0
+    else:
+        count = 0
+        dgst_part = hashlib.md5()
+        dgst_whole = hashlib.md5()
+        try:
+            with open(filename, "rb") as fh:
+                while True:
+                    buf = fh.read(chunksize)
+                    if len(buf) < 1:
+                        break
+                    count = count + 1
+                    dgst_part = hashlib.md5(buf)
+                    dgst_whole.update(dgst_part.digest())
+        except OSError as err:
+            print("ERROR: {}".format(err), file=sys.stderr, flush=True)
+            return err.errno
+
+        etag = (
+            "{}-{}".format(dgst_whole.hexdigest(), count)
+            if count > 1
+            else dgst_part.hexdigest()
+        )
+
+    return etag
