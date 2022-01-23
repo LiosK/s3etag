@@ -1,8 +1,7 @@
 import setuptools
 
-# with open("README.md", mode="r") as fh:
-#     long_description = fh.read()
-long_description = ""
+with open("README.md", mode="r") as fh:
+    long_description = fh.read()
 
 setuptools.setup(
     name="s3etag",
