@@ -62,7 +62,7 @@ def parse_chunksize(size):
 
 
 def calc_s3_etag(filename, threshhold=8388608, chunksize=8388608):
-    """Compute and print Etag for a file
+    """Compute Etag for a file
 
     Args:
         filename (pathlib.PosixPath or str):
