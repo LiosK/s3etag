@@ -5,7 +5,7 @@ with open("README.md", mode="r") as fh:
 
 setuptools.setup(
     name="s3etag",
-    version="0.1.0",
+    version="0.2.0",
     author="Koichi Kawamura",
     author_email="koichikwmr@icloud.com",
     description="calculate AWS S3 etag",

@@ -34,7 +34,11 @@ def main():
 
     # loop given files
     for f in args.files:
-        etag = calc_s3_etag(f, args.threshhold, args.chunksize)
+        etag = calc_s3_etag(
+            f,
+            threshhold=args.threshhold,
+            chunksize=args.chunksize
+        )
         print("{: <39s} {}".format(etag, f), flush=True)
 
 
@@ -57,8 +61,21 @@ def parse_chunksize(size):
     )
 
 
-def calc_s3_etag(filename, threshhold, chunksize):
-    """Compute and print Etag for a file"""
+def calc_s3_etag(filename, threshhold=8388608, chunksize=8388608):
+    """Compute and print Etag for a file
+
+    Args:
+        filename (pathlib.PosixPath or str):
+            Path to the file on which the function computes etag
+        threshhold (int):
+            file-size (in bytes) threshhold above which the function computes
+            etag chunk-wise / optional, defaults to 8388608 = 8M bytes
+        chunksize (int):
+            chunksize in bytes / optional, defaults to 8388608 = 8M bytes
+
+    Returns:
+        str: etag (aws s3-style md5)
+    """
     if isinstance(filename, pathlib.PosixPath):
         filesize = filename.stat().st_size
     elif isinstance(filename, str):
