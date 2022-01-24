@@ -22,7 +22,7 @@ from s3etag import calc_s3_etag
 
 filename = pathlib.Path('example.file')
 # filename can be either pathlib.PosixPath or str
-etag = calc_s3_etag(filename, 8388608, 8388608)
+etag = calc_s3_etag(filename)
 ```
 ```
 Help on function calc_s3_etag in module s3etag:
