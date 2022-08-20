@@ -38,17 +38,11 @@ def parse_chunksize(size: str) -> int:
     """Parse chunksize argument"""
     match = re.fullmatch(r"(\d+)([KMGT]B)?", size)
     if match is None:
-        raise argparse.ArgumentTypeError("invalid size value: '{}'".format(size))
+        raise argparse.ArgumentTypeError("invalid value: '{}'".format(size))
     num, suffix = match.groups("")
-    return int(num) * (
-        {
-            "": 1,
-            "KB": 1024**1,
-            "MB": 1024**2,
-            "GB": 1024**3,
-            "TB": 1024**4,
-        }[suffix]
-    )
+    if int(num) < 1:
+        raise argparse.ArgumentTypeError("invalid value: '{}'".format(size))
+    return int(num) << {"": 0, "KB": 10, "MB": 20, "GB": 30, "TB": 40}[suffix]
 
 
 def compute_etag(filename: str, chunksize: int) -> str:

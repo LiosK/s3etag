@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "s3etag"
-version = "0.1.4"
-description = "Compute AWS S3 Etags."
+version = "0.1.5"
+description = "Compute AWS S3 Etags"
 license = "Apache-2.0"
 authors = ["LiosK <contact@mail.liosk.net>"]
+readme = "README.md"
 homepage = "https://github.com/LiosK/s3etag"
 
 [tool.poetry.scripts]
