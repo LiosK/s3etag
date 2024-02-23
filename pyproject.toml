@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "s3etag"
-version = "0.1.5"
+version = "0.1.6"
 description = "Compute AWS S3 Etags"
 license = "Apache-2.0"
 authors = ["LiosK <contact@mail.liosk.net>"]
@@ -11,7 +11,7 @@ homepage = "https://github.com/LiosK/s3etag"
 s3etag = "s3etag:main"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 
 [tool.poetry.dev-dependencies]
 

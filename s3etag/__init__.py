@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import re
 import sys
 
@@ -48,6 +49,7 @@ def parse_chunksize(size: str) -> int:
 def compute_etag(filename: str, chunksize: int) -> str:
     """Compute Etag for a file"""
     with open(filename, "rb") as fh:
+        fadvise_sequential(fh)
         buf = fh.read(chunksize)
         dgst_part = hashlib.md5(buf)
         buf = fh.read(chunksize)
@@ -62,3 +64,11 @@ def compute_etag(filename: str, chunksize: int) -> str:
             dgst_whole.update(dgst_part.digest())
             buf = fh.read(chunksize)
         return "{}-{}".format(dgst_whole.hexdigest(), count)
+
+
+if hasattr(os, "posix_fadvise"):
+    fadvise_sequential = lambda fh: os.posix_fadvise(
+        fh.fileno(), 0, 0, os.POSIX_FADV_SEQUENTIAL
+    )
+else:
+    fadvise_sequential = lambda _: None
